@@ -1,5 +1,0 @@
-2020.10.09 14:54:35 INFO  started: Metals version 0.9.3 in workspace '/home/paul/AndroidStudioProjects/Bootcamp' .
-2020.10.09 14:54:37 INFO  time: initialize in 1.87s
-2020.10.09 15:04:00 INFO  started: Metals version 0.9.3 in workspace '/home/paul/AndroidStudioProjects/Bootcamp' .
-2020.10.09 15:04:02 INFO  time: initialize in 1.78s
-2020.10.09 15:04:02 WARN  resetting database: /home/paul/AndroidStudioProjects/Bootcamp/.metals/metals.h2.db
