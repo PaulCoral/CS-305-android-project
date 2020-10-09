@@ -60,7 +60,7 @@ class WeatherForeCast : AppCompatActivity() {
             }
         println("The loc is $loc")
         val weatherAsText = loc?.run {
-            val jobj = WeatherService().requestWeather(loc)
+            val jobj = WeatherService(resources.getString(R.string.openweather_api_key)).requestWeather(loc)
             if (jobj != null) {
                 val temp = WeatherService.getTemperatureFromJson(jobj)
                 val description = WeatherService.getDescriptionFromJson(jobj)

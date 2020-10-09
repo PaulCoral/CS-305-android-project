@@ -1,5 +1,6 @@
 package com.github.lepaincestbon.bootcamp.weatherforecast
 
+import android.R
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.IOException
@@ -8,9 +9,8 @@ import java.lang.StringBuilder
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
-class WeatherService(private val appid: String = DEFAULT_API_ID) {
+class WeatherService(private val appid: String) {
     companion object {
-        val DEFAULT_API_ID = ???
 
         enum class UNITS(private val unitName: String) {
             CELSIUS("metric"),
