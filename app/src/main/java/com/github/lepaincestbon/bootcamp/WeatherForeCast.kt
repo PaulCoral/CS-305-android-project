@@ -2,19 +2,21 @@ package com.github.lepaincestbon.bootcamp
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.Switch
 import android.widget.TextView
-import androidx.core.app.ActivityCompat
-import com.github.lepaincestbon.bootcamp.weatherforecast.GeocodingService
-import com.github.lepaincestbon.bootcamp.weatherforecast.LocationService
-import com.github.lepaincestbon.bootcamp.weatherforecast.WeatherService
+import com.github.lepaincestbon.bootcamp.weatherforecast.geocoding.WeatherGeocodingService
+import com.github.lepaincestbon.bootcamp.weatherforecast.location.WeatherLocationService
+import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherForecastService
+
 
 class WeatherForeCast : AppCompatActivity() {
+    companion object{
+        const val PERMISSION_REQUEST_CODE = 1
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_weather_fore_cast)
@@ -23,17 +25,8 @@ class WeatherForeCast : AppCompatActivity() {
             arrayOf(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ), 0
+            ), PERMISSION_REQUEST_CODE
         )
-        val b1 = ActivityCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-        val b2 = ActivityCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-        println("Booleans permission: $b1 and $b2")
     }
 
     @SuppressLint("UseSwitchCompatOrMaterialCode")
@@ -54,16 +47,16 @@ class WeatherForeCast : AppCompatActivity() {
 
         val loc =
             if (isGpsEnabled) {
-                LocationService(appContext).getCurrentLocation()
+                WeatherLocationService(appContext).getCurrentLocation()
             } else {
-                GeocodingService(appContext).getLocationFromName(locName)
+                WeatherGeocodingService(appContext).getLocationFromName(locName)
             }
         println("The loc is $loc")
         val weatherAsText = loc?.run {
-            val jobj = WeatherService(resources.getString(R.string.openweather_api_key)).requestWeather(loc)
+            val jobj = WeatherForecastService(resources.getString(R.string.openweather_api_key)).requestWeather(loc)
             if (jobj != null) {
-                val temp = WeatherService.getTemperatureFromJson(jobj)
-                val description = WeatherService.getDescriptionFromJson(jobj)
+                val temp = WeatherForecastService.getTemperatureFromJson(jobj)
+                val description = WeatherForecastService.getDescriptionFromJson(jobj)
 
                 """hi, here's the weather for today :
                     | - Temperature : $temp

@@ -1,6 +1,6 @@
-package com.github.lepaincestbon.bootcamp.weatherforecast
+package com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice
 
-import android.R
+import com.github.lepaincestbon.bootcamp.weatherforecast.location.Location
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.IOException
@@ -9,7 +9,7 @@ import java.lang.StringBuilder
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
-class WeatherService(private val appid: String) {
+class WeatherForecastService(private val appID: String) : ForecastService {
     companion object {
 
         enum class UNITS(private val unitName: String) {
@@ -21,7 +21,7 @@ class WeatherService(private val appid: String) {
         }
 
         private fun apiResponseToJson(apiResponse: String) =
-            apiResponse?.let { JSONObject(JSONTokener(it)) }
+            JSONObject(JSONTokener(apiResponse))
 
         private fun getCurrentObj(root: JSONObject) =
             root.getJSONObject("current")
@@ -41,9 +41,9 @@ class WeatherService(private val appid: String) {
 
     }
 
-    fun requestWeather(lat: Double, lon: Double, unit: UNITS = UNITS.CELSIUS): JSONObject? {
+    private fun requestWeather(lat: Double, lon: Double, unit: UNITS = UNITS.CELSIUS): String? {
         val queryUrl =
-            "https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${appid}&units=${unit}"
+            "https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${appID}&units=${unit}"
         val url = URL(queryUrl)
         var connection: HttpsURLConnection? = null
         return try {
@@ -55,14 +55,11 @@ class WeatherService(private val appid: String) {
             }
             val connectionResponse = connection?.run {
                 connect()
-                println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>< connected")
 
                 val responseCode = responseCode
                 if (responseCode != HttpsURLConnection.HTTP_OK) {
-                    println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>< connected2 $responseCode")
                     throw IOException("HTTP error code: $responseCode")
                 }
-                println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>< connected3")
                 val response = inputStream?.let { stream ->
                     val inReader = InputStreamReader(stream)
                     val lines = inReader.readLines()
@@ -77,10 +74,9 @@ class WeatherService(private val appid: String) {
                 }
                 inputStream?.close()
                 disconnect()
-
                 response
             }
-            connectionResponse?.run { apiResponseToJson(this) }
+            connectionResponse
         } finally {
             connection?.inputStream?.close()
             connection?.disconnect()
@@ -89,6 +85,15 @@ class WeatherService(private val appid: String) {
 
     }
 
-    fun requestWeather(loc: Location): JSONObject? = loc.run { requestWeather(latitude, longitude) }
-
+    override fun requestWeather(loc: Location): ForecastReport {
+        val textReport =
+            loc.run { requestWeather(latitude, longitude) } ?: return EmptyForecastReport
+        val jsonObj = apiResponseToJson(textReport)
+        return jsonObj.run {
+            WeatherForecastReport(
+                getTemperatureFromJson(this),
+                getDescriptionFromJson(this)
+            )
+        }
+    }
 }
