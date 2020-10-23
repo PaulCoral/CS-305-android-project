@@ -5,6 +5,12 @@ sealed class ForecastReport
 data class WeatherForecastReport(
     val temp: Int,
     val description: String
-) : ForecastReport()
+) : ForecastReport() {
+    override fun toString(): String =
+        """Weather : $description
+            |Temperature : $temp
+        """.trimMargin()
+
+}
 
 object EmptyForecastReport : ForecastReport()
