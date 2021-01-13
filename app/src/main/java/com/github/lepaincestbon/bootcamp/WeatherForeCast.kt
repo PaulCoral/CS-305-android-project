@@ -2,6 +2,7 @@ package com.github.lepaincestbon.bootcamp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
@@ -15,6 +16,8 @@ import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherF
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherForecastService
 import kotlinx.android.synthetic.main.activity_weather_fore_cast.*
 
+
+const val WEATHER_REPORT_MESSAGE = "com.github.lepaincestbon.WEATHER_REPORT_MESSAGE"
 
 class WeatherForeCast : AppCompatActivity() {
     companion object {
@@ -48,16 +51,20 @@ class WeatherForeCast : AppCompatActivity() {
         }
     }
 
-    fun displayWeather() {
+    private fun displayWeather() {
 
         val location =
-            when (gpsSwitch.isChecked) {
-                true -> WeatherLocationService(this).getCurrentLocation()
-                false -> {
-                    val locationName = cityNameField.text.toString()
-                    WeatherGeocodingService(this).getLocationFromName(locationName)
-                }
-            } ?: return
+            if (gpsSwitch.isChecked) {
+                WeatherLocationService(this).getCurrentLocation()
+            } else {
+                val locationName = cityNameField.text.toString()
+                WeatherGeocodingService(this).getLocationFromName(locationName)
+            }
+
+        if (location == null) {
+            textViewWeather.text = "Could not get your location..."
+            return
+        }
 
         val weatherReport =
             WeatherForecastService(resources.getString(R.string.openweather_api_key))
@@ -65,54 +72,21 @@ class WeatherForeCast : AppCompatActivity() {
         when (weatherReport) {
             is EmptyForecastReport -> textViewWeather.text =
                 resources.getString(R.string.weather_display_error)
-            is WeatherForecastReport -> textViewWeather.text = weatherReport.toString()
+            is WeatherForecastReport -> {
+                textViewWeather.text = "Loading ..."
+                displayWeatherActivity(weatherReport)
+            }
+
         }
     }
 
 
-    /*@SuppressLint("UseSwitchCompatOrMaterialCode")
-    fun displayWeather(view: View) {
-        val editText = findViewById<EditText>(R.id.cityName)
-        val locName = editText.text.toString()
-        println("locName : $locName")
+    private fun displayWeatherActivity(report: WeatherForecastReport) {
+        val intent = Intent(this, DisplayWeatherActivity::class.java).apply {
+            putExtra(WEATHER_REPORT_MESSAGE, report)
 
-        val gps = findViewById<Switch>(R.id.gps)
-        val isGpsEnabled = gps.isChecked
-        println("gps enabled : $isGpsEnabled")
-
-        val weatherDisplay = findViewById<TextView>(R.id.textViewWeather)
-
-        val appContext = this
-
-        val loc =
-            if (isGpsEnabled) {
-                WeatherLocationService(appContext).getCurrentLocation()
-            } else {
-                WeatherGeocodingService(appContext).getLocationFromName(locName)
-            }
-        println("The loc is $loc")
-        val weatherAsText = loc?.run {
-            val jobj =
-                WeatherForecastService(resources.getString(R.string.openweather_api_key)).requestWeather(
-                    loc
-                )
-            if (jobj != null) {
-                val temp = WeatherForecastService.getTemperatureFromJson(jobj)
-                val description = WeatherForecastService.getDescriptionFromJson(jobj)
-
-                """hi, here's the weather for today :
-                    | - Temperature : $temp
-                    | - Description : $description
-                    | Thanks !
-                """.trimMargin()
-            } else {
-                // if null json object, something went wrong
-                errorMsg
-            }
         }
+        startActivity(intent)
+    }
 
-        weatherDisplay.apply {
-            text = weatherAsText
-        }
-    }*/
 }

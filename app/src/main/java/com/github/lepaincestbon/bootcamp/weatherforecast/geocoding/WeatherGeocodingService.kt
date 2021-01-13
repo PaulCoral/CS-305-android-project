@@ -13,27 +13,28 @@ class WeatherGeocodingService(private val geocoder: Geocoder) : GeocodingService
 
     constructor(context: Context) : this(Geocoder(context))
 
-    override fun getLocationFromName(name: String): Location {
-        try {
+    override fun getLocationFromName(name: String): Location? {
+        return try {
             val addressList = geocoder.getFromLocationName(name, MAX_LOCATION_RESULT)
-            return addressList
+            addressList
                 .stream()
                 .filter { it.hasLatitude() && it.hasLongitude() }
                 .map { Location(it.latitude, it.longitude) }
                 .findFirst()
                 .get()
         } catch (ex: IOException) {
-            throw ex;
+            null
         } catch (ex: NoSuchElementException) {
-            throw NoSuchElementException("No location matching the given name.")
+            null
         }
     }
 
-    override fun getAddressFromLocation(location: Location): Address =
+    override fun getAddressFromLocation(location: Location): Address? =
         try {
             location.run { geocoder.getFromLocation(latitude, longitude, 1) }.first()
-        } catch (ex : NoSuchElementException){
-            throw NoSuchElementException("No address match the given location")
+        } catch (ex: NoSuchElementException) {
+            null
         }
+
 
 }
