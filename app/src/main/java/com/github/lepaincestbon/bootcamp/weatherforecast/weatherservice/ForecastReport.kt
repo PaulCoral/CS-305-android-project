@@ -1,16 +1,14 @@
 package com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice
 
-sealed class ForecastReport
+import java.io.Serializable
+
+sealed class ForecastReport : Serializable
 
 data class WeatherForecastReport(
+    val main: String,
     val temp: Int,
-    val description: String
-) : ForecastReport() {
-    override fun toString(): String =
-        """Weather : $description
-            |Temperature : $temp
-        """.trimMargin()
-
-}
+    val description: String,
+    val icon: ByteArray
+) : ForecastReport()
 
 object EmptyForecastReport : ForecastReport()
