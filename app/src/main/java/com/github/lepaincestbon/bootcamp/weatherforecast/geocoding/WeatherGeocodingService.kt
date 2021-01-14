@@ -6,6 +6,7 @@ import android.location.Geocoder
 import com.github.lepaincestbon.bootcamp.weatherforecast.location.Location
 import java.io.IOException
 
+
 class WeatherGeocodingService(private val geocoder: Geocoder) : GeocodingService {
     companion object {
         const val MAX_LOCATION_RESULT = 5

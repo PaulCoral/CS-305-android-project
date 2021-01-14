@@ -44,9 +44,7 @@ class WeatherForecastService(private val appID: String) : ForecastService {
                 } catch (e: JSONException) {
                     "$errorMsg : $e"
                 }
-
             }
-
         }
 
         private fun getDescriptionFromJson(jobj: JSONObject): String =
@@ -75,17 +73,12 @@ class WeatherForecastService(private val appID: String) : ForecastService {
 
                 val connectionResponse = connection?.run {
                     connect()
-
                     val responseCode = responseCode
-
                     if (responseCode != HttpsURLConnection.HTTP_OK) {
                         throw IOException("HTTP error code: $responseCode")
                     }
                     val instream = inputStream
-
                     val bitmap = BitmapFactory.decodeStream(instream)
-
-
                     inputStream?.close()
                     disconnect()
                     bitmap
