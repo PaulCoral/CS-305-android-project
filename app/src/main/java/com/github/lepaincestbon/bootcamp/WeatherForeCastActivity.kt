@@ -14,11 +14,13 @@ import com.github.lepaincestbon.bootcamp.weatherforecast.location.WeatherLocatio
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.EmptyForecastReport
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherForecastReport
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherForecastService
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_weather_fore_cast.*
 
 
 const val WEATHER_REPORT_MESSAGE = "com.github.lepaincestbon.WEATHER_REPORT_MESSAGE"
 
+@AndroidEntryPoint
 class WeatherForeCast : AppCompatActivity() {
     companion object {
         const val PERMISSION_REQUEST_CODE = 1
