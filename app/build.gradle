@@ -58,5 +58,4 @@ dependencies {
     // hilt with MVVM
     annotationProcessor 'androidx.hilt:hilt-compiler:1.0.0-alpha02'
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02'
-
 }

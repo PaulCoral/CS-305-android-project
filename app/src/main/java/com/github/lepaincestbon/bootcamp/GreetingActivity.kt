@@ -10,7 +10,7 @@ class GreetingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_greeting)
 
         val name = intent.getStringExtra(EXTRA_MESSAGE)
-        val textView = findViewById<TextView>(R.id.greetingMessage).apply {
+        findViewById<TextView>(R.id.greetingMessage).apply {
             text = greetingWithName(name)
         }
     }
