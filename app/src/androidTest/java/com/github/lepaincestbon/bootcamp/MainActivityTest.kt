@@ -27,14 +27,12 @@ class MainActivityTest {
         Espresso.onView(ViewMatchers.withId(R.id.mainGoButton)).perform(click())
         Intents.intended(
             Matchers.allOf(
-                IntentMatchers.hasComponent(GreetingActivityTest::class.java.name),
+                IntentMatchers.hasComponent(GreetingActivity::class.java.name),
                 IntentMatchers.hasExtra(
                     EXTRA_MESSAGE, TEST_NAME
                 )
             )
         )
-
-
         Intents.release()
     }
 
