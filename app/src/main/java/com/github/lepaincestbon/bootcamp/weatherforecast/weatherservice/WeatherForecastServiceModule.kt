@@ -14,7 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 @InstallIn(ApplicationComponent::class)
 abstract class WeatherForecastServiceModule {
     @Binds
-    abstract fun bindWeatherForecastService(impl: WeatherForecastService): WeatherForecastService
+    abstract fun bindWeatherForecastService(impl: WeatherForecastService): ForecastService
 
     @Provides
     fun providesAppid(@ApplicationContext context: Context) =

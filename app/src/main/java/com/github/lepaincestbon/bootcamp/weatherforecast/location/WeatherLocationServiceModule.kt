@@ -14,7 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 abstract class WeatherLocationServiceModule {
 
     @Binds
-    abstract fun bindWeatherLocationService(impl: WeatherLocationService): WeatherLocationService
+    abstract fun bindWeatherLocationService(impl: WeatherLocationService): LocationService
 
     companion object {
         @Provides

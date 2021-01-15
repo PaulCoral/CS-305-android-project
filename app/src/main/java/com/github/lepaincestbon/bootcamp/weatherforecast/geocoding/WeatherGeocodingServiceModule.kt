@@ -13,7 +13,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 @InstallIn(ApplicationComponent::class)
 abstract class WeatherGeocodingServiceModule {
     @Binds
-    abstract fun bindWeatherGeocodingService(weatherGeocodingServiceImpl: WeatherGeocodingService): WeatherGeocodingService
+    abstract fun bindWeatherGeocodingService(weatherGeocodingServiceImpl: WeatherGeocodingService): GeocodingService
 
     companion object {
         @Provides
