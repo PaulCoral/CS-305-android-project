@@ -72,8 +72,8 @@ class WeatherLocationService(private val locationManager: LocationManager) : Loc
     }
 
     companion object {
-        private val minTime = 1000L
-        private val minDistance = 1f
+        private const val minTime = 1000L
+        private const val minDistance = 1f
         fun fromContext(context: Context) =
             context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 

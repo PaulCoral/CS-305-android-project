@@ -12,18 +12,20 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Your Name"
+        android:text="@string/main_edittext_placeholder"
         app:layout_constraintBottom_toTopOf="@+id/mainGoButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:autofillHints=""
+        tools:ignore="LabelFor" />
 
     <Button
         android:id="@+id/mainGoButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="sendMessage"
-        android:text="Button"
+        android:text="@string/main_button_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +36,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="goToWeather"
-        android:text="Weather"
+        android:text="@string/main_show_weather_button_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"

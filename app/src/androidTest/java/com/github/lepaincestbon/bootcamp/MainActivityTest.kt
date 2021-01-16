@@ -1,4 +1,4 @@
-package com.github.lepaincestbon.bootcamp;
+package com.github.lepaincestbon.bootcamp
 
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ViewActions.*
@@ -20,7 +20,6 @@ class MainActivityTest {
     @Test
     fun testMethod() {
         Intents.init()
-        val TEST_NAME = "Test name"
 
         Espresso.onView(ViewMatchers.withId(R.id.mainName)).perform(replaceText(TEST_NAME))
         closeSoftKeyboard()
@@ -34,6 +33,10 @@ class MainActivityTest {
             )
         )
         Intents.release()
+    }
+
+    companion object {
+        const val TEST_NAME = "Test name"
     }
 
 }

@@ -1,8 +1,6 @@
 package com.github.lepaincestbon.bootcamp
 
-import android.content.Context
 import android.content.Intent
-import android.location.LocationManager
 import android.os.Bundle
 import android.os.StrictMode
 import android.view.View

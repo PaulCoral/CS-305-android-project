@@ -15,6 +15,7 @@ import javax.net.ssl.HttpsURLConnection
 class WeatherForecastService(private val appID: String) : ForecastService {
     companion object {
 
+        @Suppress("unused")
         enum class UNITS(private val unitName: String) {
             CELSIUS("metric"),
             KELVIN("standard"),

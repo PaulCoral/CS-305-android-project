@@ -2,12 +2,9 @@ package com.github.lepaincestbon.bootcamp
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Switch
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.github.lepaincestbon.bootcamp.weatherforecast.geocoding.WeatherGeocodingService
 import com.github.lepaincestbon.bootcamp.weatherforecast.location.WeatherLocationService
@@ -16,8 +13,6 @@ import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherF
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherForecastService
 import kotlinx.android.synthetic.main.activity_weather_fore_cast.*
 
-
-const val WEATHER_REPORT_MESSAGE = "com.github.lepaincestbon.WEATHER_REPORT_MESSAGE"
 
 class WeatherForeCast : AppCompatActivity() {
     companion object {
@@ -42,17 +37,14 @@ class WeatherForeCast : AppCompatActivity() {
             ), PERMISSION_REQUEST_CODE
         )
 
-        cityNameField = findViewById<EditText>(R.id.cityName)
-        gpsSwitch = findViewById<Switch>(R.id.gps)
-        weatherTextView = findViewById<TextView>(R.id.textViewWeather)
-        fetchWeatherButton = findViewById<Button>(R.id.fetchWeather)
-        fetchWeatherButton.setOnClickListener {
-            displayWeather()
-        }
+        cityNameField = findViewById(R.id.cityName)
+        gpsSwitch = findViewById(R.id.gps)
+        weatherTextView = findViewById(R.id.textViewWeather)
+        fetchWeatherButton = findViewById(R.id.fetchWeather)
+        fetchWeatherButton.setOnClickListener { displayWeather() }
     }
 
     private fun displayWeather() {
-
         val location =
             if (gpsSwitch.isChecked) {
                 WeatherLocationService(this).getCurrentLocation()
@@ -62,7 +54,7 @@ class WeatherForeCast : AppCompatActivity() {
             }
 
         if (location == null) {
-            textViewWeather.text = "Could not get your location..."
+            textViewWeather.text = resources.getString(R.string.weather_location_error)
             return
         }
 
@@ -70,10 +62,10 @@ class WeatherForeCast : AppCompatActivity() {
             WeatherForecastService(resources.getString(R.string.openweather_api_key))
                 .requestWeather(location)
         when (weatherReport) {
-            is EmptyForecastReport -> textViewWeather.text =
+            is EmptyForecastReport -> weatherTextView.text =
                 resources.getString(R.string.weather_display_error)
             is WeatherForecastReport -> {
-                textViewWeather.text = "Loading ..."
+                weatherTextView.text = getString(R.string.weather_textview_loading)
                 displayWeatherActivity(weatherReport)
             }
 
@@ -82,11 +74,20 @@ class WeatherForeCast : AppCompatActivity() {
 
 
     private fun displayWeatherActivity(report: WeatherForecastReport) {
-        val intent = Intent(this, DisplayWeatherActivity::class.java).apply {
-            putExtra(WEATHER_REPORT_MESSAGE, report)
+        val iconView = findViewById<ImageView>(R.id.weatherIconImageView)
 
+        weatherTextView.apply {
+            val textReport =
+                """${report.main} : ${report.description}
+                    |It is ${report.temp} outside.
+                """.trimMargin()
+            text = textReport
         }
-        startActivity(intent)
+
+        report.icon.run {
+            if (this.isEmpty()) return
+            iconView.setImageBitmap(BitmapFactory.decodeByteArray(this, 0, this.size))
+        }
     }
 
 }

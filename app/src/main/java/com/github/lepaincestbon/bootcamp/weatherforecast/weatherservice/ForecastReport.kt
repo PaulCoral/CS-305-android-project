@@ -4,6 +4,7 @@ import java.io.Serializable
 
 sealed class ForecastReport : Serializable
 
+@Suppress("ArrayInDataClass")
 data class WeatherForecastReport(
     val main: String,
     val temp: Int,

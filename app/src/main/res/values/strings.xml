@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">Bootcamp</string>
     <string name="weather_display_error">Oops… Weather can\'t be loaded</string>
+    <string name="weather_location_error">Could not get your location…</string>
+    <string name="weather_textedit_placeholder">City or Location</string>
+    <string name="weather_icon_description">Weather icon</string>
+    <string name="weather_fetch_button_text">FETCH</string>
+    <string name="weather_description_textview_placeholder">Weather</string>
+    <string name="weather_textview_loading">Loading…</string>
+    <string name="greeting_textview_placeholder">TextView</string>
+    <string name="main_edittext_placeholder">Your Name</string>
+    <string name="main_button_text">GO</string>
+    <string name="main_show_weather_button_text">Weather</string>
+    <string name="weather_gps_switch_text">GPS</string>
 </resources>
