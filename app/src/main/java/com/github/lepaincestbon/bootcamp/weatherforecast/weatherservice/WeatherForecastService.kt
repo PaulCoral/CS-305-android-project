@@ -60,7 +60,7 @@ class WeatherForecastService(private val appID: String) : ForecastService {
         private fun getIconIdFromJson(jobj: JSONObject): String =
             getFromWeatherFromJson(jobj, "icon")
 
-
+        @Throws(IOException::class)
         fun getIconFromId(imgId: String): Bitmap? {
             val url = URL("https://openweathermap.org/img/wn/${imgId}@2x.png")
 
