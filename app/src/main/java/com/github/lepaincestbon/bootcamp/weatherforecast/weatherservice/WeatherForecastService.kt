@@ -11,9 +11,10 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.net.SocketTimeoutException
 import java.net.URL
+import javax.inject.Inject
 import javax.net.ssl.HttpsURLConnection
 
-class WeatherForecastService(private val appID: String) : ForecastService {
+class WeatherForecastService @Inject constructor(private val appID: String) : ForecastService {
     companion object {
 
         @Suppress("unused")

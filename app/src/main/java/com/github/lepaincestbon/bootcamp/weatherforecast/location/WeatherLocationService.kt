@@ -7,8 +7,11 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import java.util.function.Consumer
+import javax.inject.Inject
 
-class WeatherLocationService(private val locationManager: LocationManager) : LocationService {
+class WeatherLocationService private constructor(private val locationManager: LocationManager) :
+    LocationService {
+    @Inject
     constructor(context: Context) : this(fromContext(context))
 
     private val listeners: MutableMap<Int, LocationListener> = HashMap()

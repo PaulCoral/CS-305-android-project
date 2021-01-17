@@ -4,14 +4,16 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.github.lepaincestbon.bootcamp.weatherforecast.geocoding.WeatherGeocodingService
 import com.github.lepaincestbon.bootcamp.weatherforecast.location.WeatherLocationService
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.EmptyForecastReport
+import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.ForecastReport
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherForecastReport
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.WeatherForecastService
-import kotlinx.android.synthetic.main.activity_weather_fore_cast.*
 
 
 class WeatherForeCast : AppCompatActivity() {
@@ -19,12 +21,16 @@ class WeatherForeCast : AppCompatActivity() {
         const val PERMISSION_REQUEST_CODE = 1
     }
 
+    private lateinit var viewModel: WeatherActivityViewModel
     private lateinit var cityNameField: EditText
 
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private lateinit var gpsSwitch: Switch
-    private lateinit var weatherTextView: TextView
     private lateinit var fetchWeatherButton: Button
+
+    private lateinit var weatherTextView: TextView
+    private lateinit var iconView: ImageView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,56 +43,73 @@ class WeatherForeCast : AppCompatActivity() {
             ), PERMISSION_REQUEST_CODE
         )
 
+        /* Create view model */
+        //viewModel = ViewModelProvider(this).get(WeatherActivityViewModel::class.java)
+        viewModel = WeatherActivityViewModel(
+            WeatherLocationService(this),
+            WeatherGeocodingService(this),
+            WeatherForecastService(resources.getString(R.string.openweather_api_key))
+        )
+        /*viewModel = ViewModelProvider(
+            this,
+            WeatherViewModelProviderFactory(this, resources.getString(R.string.openweather_api_key))
+        ).get(WeatherActivityViewModel::class.java)*/
+
+        /* Set observers */
+        viewModel.currentWeather.observe(this, this::displayWeatherActivity)
+        viewModel.isUsingGPS.observe(this) { cityNameField.isEnabled = !it }
+        viewModel.canQueryWeather.observe(this) { fetchWeatherButton.isEnabled = it }
+
+
+        /* Set listeners */
+
         cityNameField = findViewById(R.id.cityName)
-        gpsSwitch = findViewById(R.id.gps)
-        weatherTextView = findViewById(R.id.textViewWeather)
-        fetchWeatherButton = findViewById(R.id.fetchWeather)
-        fetchWeatherButton.setOnClickListener { displayWeather() }
-    }
-
-    private fun displayWeather() {
-        val location =
-            if (gpsSwitch.isChecked) {
-                WeatherLocationService(this).getCurrentLocation()
-            } else {
-                val locationName = cityNameField.text.toString()
-                WeatherGeocodingService(this).getLocationFromName(locationName)
+        cityNameField.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                s?.run {
+                    viewModel.setSelectedAddress(toString())
+                }
             }
+        })
 
-        if (location == null) {
-            textViewWeather.text = resources.getString(R.string.weather_location_error)
-            return
+        gpsSwitch = findViewById(R.id.gps)
+        gpsSwitch.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.setIsUsingGPS(isChecked)
         }
 
-        val weatherReport =
-            WeatherForecastService(resources.getString(R.string.openweather_api_key))
-                .requestWeather(location)
-        when (weatherReport) {
+        fetchWeatherButton = findViewById(R.id.fetchWeather)
+        fetchWeatherButton.setOnClickListener {
+            viewModel.refreshWeather()
+        }
+
+        weatherTextView = findViewById(R.id.textViewWeather)
+        iconView = findViewById(R.id.weatherIconImageView)
+    }
+
+
+    private fun displayWeatherActivity(report: ForecastReport?) {
+        report ?: return
+        when (report) {
             is EmptyForecastReport -> weatherTextView.text =
                 resources.getString(R.string.weather_display_error)
             is WeatherForecastReport -> {
-                weatherTextView.text = getString(R.string.weather_textview_loading)
-                displayWeatherActivity(weatherReport)
-            }
+                val iconView = findViewById<ImageView>(R.id.weatherIconImageView)
 
-        }
-    }
-
-
-    private fun displayWeatherActivity(report: WeatherForecastReport) {
-        val iconView = findViewById<ImageView>(R.id.weatherIconImageView)
-
-        weatherTextView.apply {
-            val textReport =
-                """${report.main} : ${report.description}
+                weatherTextView.apply {
+                    val textReport =
+                        """${report.main} : ${report.description}
                     |It is ${report.temp} outside.
                 """.trimMargin()
-            text = textReport
-        }
+                    text = textReport
+                }
 
-        report.icon.run {
-            if (this.isEmpty()) return
-            iconView.setImageBitmap(BitmapFactory.decodeByteArray(this, 0, this.size))
+                report.icon.run {
+                    if (this.isEmpty()) return
+                    iconView.setImageBitmap(BitmapFactory.decodeByteArray(this, 0, this.size))
+                }
+            }
         }
     }
 
