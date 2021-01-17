@@ -9,12 +9,15 @@ import org.json.JSONTokener
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStreamReader
+import java.net.SocketTimeoutException
 import java.net.URL
+import javax.inject.Inject
 import javax.net.ssl.HttpsURLConnection
 
-class WeatherForecastService(private val appID: String) : ForecastService {
+class WeatherForecastService @Inject constructor(private val appID: String) : ForecastService {
     companion object {
 
+        @Suppress("unused")
         enum class UNITS(private val unitName: String) {
             CELSIUS("metric"),
             KELVIN("standard"),
@@ -59,7 +62,7 @@ class WeatherForecastService(private val appID: String) : ForecastService {
         private fun getIconIdFromJson(jobj: JSONObject): String =
             getFromWeatherFromJson(jobj, "icon")
 
-
+        @Throws(IOException::class, SocketTimeoutException::class)
         fun getIconFromId(imgId: String): Bitmap? {
             val url = URL("https://openweathermap.org/img/wn/${imgId}@2x.png")
 
@@ -99,7 +102,7 @@ class WeatherForecastService(private val appID: String) : ForecastService {
 
     }
 
-
+    @Throws(IOException::class, SocketTimeoutException::class)
     private fun requestWeather(lat: Double, lon: Double, unit: UNITS = UNITS.CELSIUS): String? {
         val queryUrl =
             "https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${appID}&units=${unit}"

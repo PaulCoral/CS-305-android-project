@@ -5,12 +5,15 @@ import android.location.Address
 import android.location.Geocoder
 import com.github.lepaincestbon.bootcamp.weatherforecast.location.Location
 import java.io.IOException
+import javax.inject.Inject
 
-class WeatherGeocodingService(private val geocoder: Geocoder) : GeocodingService {
+class WeatherGeocodingService private constructor(private val geocoder: Geocoder) :
+    GeocodingService {
     companion object {
         const val MAX_LOCATION_RESULT = 5
     }
 
+    @Inject
     constructor(context: Context) : this(Geocoder(context))
 
     override fun getLocationFromName(name: String): Location? {

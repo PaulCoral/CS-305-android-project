@@ -1,4 +1,4 @@
-package com.github.lepaincestbon.bootcamp;
+package com.github.lepaincestbon.bootcamp
 
 import android.content.Intent
 import androidx.test.core.app.ActivityScenario
@@ -17,7 +17,7 @@ class GreetingActivityTest {
     fun testMethod() {
         val intent = Intent(getApplicationContext(), GreetingActivity::class.java).putExtra(
             EXTRA_MESSAGE,
-            Companion.TEST_NAME
+            TEST_NAME
         )
 
         val scenario = ActivityScenario.launch<GreetingActivity>(intent)
@@ -25,7 +25,7 @@ class GreetingActivityTest {
             Espresso.onView(ViewMatchers.withId(R.id.greetingMessage)).check(
                 ViewAssertions.matches(
                     ViewMatchers.withText(
-                        Matchers.containsString(Companion.TEST_NAME)
+                        Matchers.containsString(TEST_NAME)
                     )
                 )
             )
