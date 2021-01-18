@@ -12,7 +12,7 @@ import com.github.lepaincestbon.bootcamp.weatherforecast.location.LocationServic
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.EmptyForecastReport
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.ForecastReport
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.ForecastService
-import java.io.IOException
+import java.util.concurrent.CompletableFuture
 
 
 class WeatherActivityViewModel @ViewModelInject constructor(
@@ -32,16 +32,15 @@ class WeatherActivityViewModel @ViewModelInject constructor(
 
     init {
         locationService.subscribeToLocationUpdates { loc -> currentLocation.postValue(loc) }
-        locationAtSelectedAddress = Transformations.map(selectedAddress) {
-            Log.e("locationMap", it ?: "<null>")
-            it?.let {
-                try {
-                    geocodingService.getLocationFromName(it)
-                } catch (e: IOException) {
-                    null
-                }
+        locationAtSelectedAddress = Transformations.switchMap(selectedAddress) {
+            if (it == null) {
+                null
+            } else {
+                Log.e("Selected address", it)
+                AsyncMutableLiveData(geocodingService.getLocationFromName(it))
             }
         }
+
 
         selectedLocation = Transformations.switchMap(isUsingGPS) {
             if (it == true) currentLocation else locationAtSelectedAddress
@@ -56,15 +55,28 @@ class WeatherActivityViewModel @ViewModelInject constructor(
         val loc = selectedLocation.value
         if (loc == null) {
             Log.e("refreshWeather", "loc == null")
-
             currentWeather.postValue(EmptyForecastReport)
         } else {
-            Log.e("refreshWeather", "loc != null")
+            forecastService.requestWeather(loc).whenComplete { res, ex ->
+                if (ex != null) {
+                    ex.printStackTrace()
+                } else {
+                    currentWeather.postValue(res)
+                }
+            }
+        }
+    }
 
-            try {
-                currentWeather.postValue(forecastService.requestWeather(loc))
-            } catch (e: IOException) {
-                e.printStackTrace()
+    private inner class AsyncMutableLiveData<T>(completableFuture: CompletableFuture<T>) :
+        MutableLiveData<T>() {
+        init {
+            completableFuture.whenComplete { res, ex ->
+                Log.e("asyncmutablelivedata", "$res --- $ex")
+                if (ex != null) {
+                    postValue(null)
+                } else {
+                    postValue(res)
+                }
             }
         }
     }

@@ -2,12 +2,12 @@ package com.github.lepaincestbon.bootcamp
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.android.volley.toolbox.Volley
 import com.github.lepaincestbon.bootcamp.weatherforecast.geocoding.WeatherGeocodingService
 import com.github.lepaincestbon.bootcamp.weatherforecast.location.WeatherLocationService
 import com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice.EmptyForecastReport
@@ -44,25 +44,21 @@ class WeatherForeCast : AppCompatActivity() {
         )
 
         /* Create view model */
-        //viewModel = ViewModelProvider(this).get(WeatherActivityViewModel::class.java)
         viewModel = WeatherActivityViewModel(
             WeatherLocationService(this),
             WeatherGeocodingService(this),
-            WeatherForecastService(resources.getString(R.string.openweather_api_key))
+            WeatherForecastService(
+                resources.getString(R.string.openweather_api_key),
+                Volley.newRequestQueue(this)
+            )
         )
-        /*viewModel = ViewModelProvider(
-            this,
-            WeatherViewModelProviderFactory(this, resources.getString(R.string.openweather_api_key))
-        ).get(WeatherActivityViewModel::class.java)*/
 
         /* Set observers */
         viewModel.currentWeather.observe(this, this::displayWeatherActivity)
         viewModel.isUsingGPS.observe(this) { cityNameField.isEnabled = !it }
         viewModel.canQueryWeather.observe(this) { fetchWeatherButton.isEnabled = it }
 
-
         /* Set listeners */
-
         cityNameField = findViewById(R.id.cityName)
         cityNameField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -73,17 +69,14 @@ class WeatherForeCast : AppCompatActivity() {
                 }
             }
         })
-
         gpsSwitch = findViewById(R.id.gps)
         gpsSwitch.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setIsUsingGPS(isChecked)
         }
-
         fetchWeatherButton = findViewById(R.id.fetchWeather)
         fetchWeatherButton.setOnClickListener {
             viewModel.refreshWeather()
         }
-
         weatherTextView = findViewById(R.id.textViewWeather)
         iconView = findViewById(R.id.weatherIconImageView)
     }
@@ -105,9 +98,8 @@ class WeatherForeCast : AppCompatActivity() {
                     text = textReport
                 }
 
-                report.icon.run {
-                    if (this.isEmpty()) return
-                    iconView.setImageBitmap(BitmapFactory.decodeByteArray(this, 0, this.size))
+                report.icon?.run {
+                    iconView.setImageBitmap(this)
                 }
             }
         }
