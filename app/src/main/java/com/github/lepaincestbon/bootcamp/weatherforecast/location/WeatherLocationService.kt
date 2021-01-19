@@ -53,7 +53,6 @@ class WeatherLocationService private constructor(private val locationManager: Lo
             globalId += 1
         }
 
-
         try {
             locationManager.getBestProvider(Criteria(), true)?.let { provider ->
                 getCurrentLocation()?.let {

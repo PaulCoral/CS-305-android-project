@@ -1,6 +1,5 @@
 package com.github.lepaincestbon.bootcamp
 
-import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -36,7 +35,6 @@ class WeatherActivityViewModel @ViewModelInject constructor(
             if (it == null) {
                 null
             } else {
-                Log.e("Selected address", it)
                 AsyncMutableLiveData(geocodingService.getLocationFromName(it))
             }
         }
@@ -54,7 +52,6 @@ class WeatherActivityViewModel @ViewModelInject constructor(
     fun refreshWeather() {
         val loc = selectedLocation.value
         if (loc == null) {
-            Log.e("refreshWeather", "loc == null")
             currentWeather.postValue(EmptyForecastReport)
         } else {
             forecastService.requestWeather(loc).whenComplete { res, ex ->
@@ -71,7 +68,6 @@ class WeatherActivityViewModel @ViewModelInject constructor(
         MutableLiveData<T>() {
         init {
             completableFuture.whenComplete { res, ex ->
-                Log.e("asyncmutablelivedata", "$res --- $ex")
                 if (ex != null) {
                     postValue(null)
                 } else {
