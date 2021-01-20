@@ -86,7 +86,7 @@ class WeatherForecastService @Inject constructor(
             .thenApply {
                 it.run {
                     val iconId = getIconIdFromJson(this)
-                    val url = "https://openweathermap.org/img/wn/${iconId}@2x.png"
+                    val url = "https://openweathermap.org/img/wn/${iconId}@4x.png"
                     val imageRequest = ImageRequest(url, { bitmap ->
                         cfForecast.complete(Pair(this, bitmap))
                     },
