@@ -1,20 +1,24 @@
 package com.github.lepaincestbon.bootcamp.weatherforecast.weatherservice
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.ImageRequest
+import com.android.volley.toolbox.JsonObjectRequest
 import com.github.lepaincestbon.bootcamp.weatherforecast.location.Location
 import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStreamReader
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
+import java.util.concurrent.CompletableFuture
+import javax.inject.Inject
 
-class WeatherForecastService(private val appID: String) : ForecastService {
+class WeatherForecastService @Inject constructor(
+    private val appID: String,
+    private val requestQueue: RequestQueue
+) : ForecastService {
     companion object {
 
+        @Suppress("unused")
         enum class UNITS(private val unitName: String) {
             CELSIUS("metric"),
             KELVIN("standard"),
@@ -59,108 +63,51 @@ class WeatherForecastService(private val appID: String) : ForecastService {
         private fun getIconIdFromJson(jobj: JSONObject): String =
             getFromWeatherFromJson(jobj, "icon")
 
-
-        fun getIconFromId(imgId: String): Bitmap? {
-            val url = URL("https://openweathermap.org/img/wn/${imgId}@2x.png")
-
-            var connection: HttpsURLConnection? = null
-            return try {
-
-                connection = (url.openConnection() as? HttpsURLConnection)?.apply {
-                    readTimeout = 3000
-                    connectTimeout = 3000
-                    requestMethod = "GET"
-                    doInput = true
-                }
-
-                val connectionResponse = connection?.run {
-                    connect()
-
-                    val responseCode = responseCode
-
-                    if (responseCode != HttpsURLConnection.HTTP_OK) {
-                        throw IOException("HTTP error code: $responseCode")
-                    }
-                    val instream = inputStream
-
-                    val bitmap = BitmapFactory.decodeStream(instream)
-
-
-                    inputStream?.close()
-                    disconnect()
-                    bitmap
-                }
-                connectionResponse
-            } finally {
-                connection?.inputStream?.close()
-                connection?.disconnect()
-            }
-        }
-
     }
 
-
-    private fun requestWeather(lat: Double, lon: Double, unit: UNITS = UNITS.CELSIUS): String? {
-        val queryUrl =
-            "https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${appID}&units=${unit}"
-        val url = URL(queryUrl)
-        var connection: HttpsURLConnection? = null
-        return try {
-            connection = (url.openConnection() as? HttpsURLConnection)?.apply {
-                readTimeout = 3000
-                connectTimeout = 3000
-                requestMethod = "GET"
-                doInput = true
-            }
-            val connectionResponse = connection?.run {
-                connect()
-
-                val responseCode = responseCode
-                if (responseCode != HttpsURLConnection.HTTP_OK) {
-                    throw IOException("HTTP error code: $responseCode")
-                }
-                val response = inputStream?.let { stream ->
-                    val inReader = InputStreamReader(stream)
-                    val lines = inReader.readLines()
-                    val sb = StringBuilder()
-                    for (line in lines) {
-                        sb.appendLine(line)
-                    }
-                    val urlResponse = sb.toString()
-                    stream.close()
-
-                    urlResponse
-                }
-                inputStream?.close()
-                disconnect()
-                response
-            }
-            connectionResponse
-        } finally {
-            connection?.inputStream?.close()
-            connection?.disconnect()
+    override fun requestWeather(loc: Location): CompletableFuture<ForecastReport> {
+        val queryUrl = loc.run {
+            "https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&appid=${appID}&units=${UNITS.CELSIUS}"
         }
 
+        val completableFuture = CompletableFuture<JSONObject>()
+        val cfForecast = CompletableFuture<Pair<JSONObject, Bitmap>>()
 
-    }
+        val jsonHttpRequest =
+            JsonObjectRequest(Request.Method.GET, queryUrl, null, {
+                completableFuture.complete(it)
+            }, {
+                completableFuture.completeExceptionally(it)
+            })
 
-    override fun requestWeather(loc: Location): ForecastReport {
-        val textReport =
-            loc.run { requestWeather(latitude, longitude) } ?: return EmptyForecastReport
-        val jsonObj = apiResponseToJson(textReport)
+        requestQueue.add(jsonHttpRequest)
 
+        completableFuture
+            .thenApply {
+                it.run {
+                    val iconId = getIconIdFromJson(this)
+                    val url = "https://openweathermap.org/img/wn/${iconId}@4x.png"
+                    val imageRequest = ImageRequest(url, { bitmap ->
+                        cfForecast.complete(Pair(this, bitmap))
+                    },
+                        0,
+                        0,
+                        null,
+                        null, { ex ->
+                            cfForecast.completeExceptionally(ex)
+                        })
+                    requestQueue.add(imageRequest)
 
-        return jsonObj.run {
+                }
+            }
+        return cfForecast.thenApply {
+            val json = it.first
+            val bitmap = it.second
             WeatherForecastReport(
-                getMainFromJson(this),
-                getTemperatureFromJson(this),
-                getDescriptionFromJson(this),
-                getIconIdFromJson(this).run {
-                    val icon = getIconFromId(this)
-                    val byteout = ByteArrayOutputStream()
-                    icon?.compress(Bitmap.CompressFormat.PNG, 100, byteout)
-                    byteout.toByteArray()
-                }
+                getMainFromJson(json),
+                getTemperatureFromJson(json),
+                getDescriptionFromJson(json),
+                bitmap
             )
         }
     }
